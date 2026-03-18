@@ -96,5 +96,13 @@ export function useWeek() {
     [week, persist],
   );
 
-  return { week, currentKey, addTask, updateTask, deleteTask, toggleComplete };
+  /** Replace all tasks at once (used by dev seed utility). */
+  const replaceAllTasks = useCallback(
+    (tasks: Task[]) => {
+      persist({ ...week, tasks });
+    },
+    [week, persist],
+  );
+
+  return { week, currentKey, addTask, updateTask, deleteTask, toggleComplete, replaceAllTasks };
 }

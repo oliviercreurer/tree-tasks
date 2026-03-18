@@ -34,9 +34,10 @@ interface Leaf {
 interface Props {
   tasks: Task[];
   onTaskClick: (task: Task) => void;
+  onToggleComplete?: (id: string) => void;
 }
 
-export function Treemap({ tasks, onTaskClick }: Props) {
+export function Treemap({ tasks, onTaskClick, onToggleComplete }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 800, height: 500 });
   const [tooltip, setTooltip] = useState<{ task: Task; x: number; y: number } | null>(null);
@@ -129,7 +130,14 @@ export function Treemap({ tasks, onTaskClick }: Props) {
               key={task.id}
               transform={`translate(${x0},${y0})`}
               className="treemap-cell"
-              onClick={() => onTaskClick(task)}
+              onClick={(e) => {
+                if ((e.metaKey || e.ctrlKey) && onToggleComplete) {
+                  e.stopPropagation();
+                  onToggleComplete(task.id);
+                } else {
+                  onTaskClick(task);
+                }
+              }}
               onMouseMove={(e) => setTooltip({ task, x: e.clientX, y: e.clientY })}
               onMouseLeave={() => setTooltip(null)}
               style={{ cursor: 'pointer' }}
@@ -174,10 +182,10 @@ export function Treemap({ tasks, onTaskClick }: Props) {
                 <foreignObject x={pad} y={pad} width={w - pad * 2} height={h - pad * 2 - 16}>
                   <div
                     style={{
-                      fontSize: 12,
+                      fontSize: 10,
                       lineHeight: 1.4,
                       color: c.text,
-                      fontFamily: 'var(--font-body)',
+                      fontFamily: "'JetBrains Mono', monospace",
                       fontWeight: task.completed ? 400 : 500,
                       textDecoration: task.completed ? 'line-through' : 'none',
                       overflow: 'hidden',
@@ -197,9 +205,9 @@ export function Treemap({ tasks, onTaskClick }: Props) {
                 <text
                   x={pad}
                   y={h / 2 + 4}
-                  fontSize={11}
+                  fontSize={10}
                   fill={c.text}
-                  fontFamily="var(--font-body)"
+                  fontFamily="'JetBrains Mono', monospace"
                   opacity={task.completed ? 0.6 : 0.9}
                 >
                   {task.name.length > 18 ? task.name.slice(0, 16) + '…' : task.name}
