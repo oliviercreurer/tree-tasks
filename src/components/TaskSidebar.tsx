@@ -33,7 +33,7 @@ export function TaskSidebar({
   return (
     <aside
       style={{
-        width: 268,
+        width: 420,
         flexShrink: 0,
         background: 'var(--sidebar-bg)',
         borderLeft: '1px solid var(--border)',

@@ -15,9 +15,9 @@
   --border: rgba(26, 23, 20, 0.1);
   --border-strong: rgba(26, 23, 20, 0.2);
 
-  --font-display: 'Fraunces', Georgia, serif;
-  --font-body: 'DM Sans', system-ui, sans-serif;
-  --font-mono: 'DM Mono', monospace;
+  --font-display: 'JetBrains Mono', monospace;
+  --font-body: 'JetBrains Mono', monospace;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 html, body, #root {

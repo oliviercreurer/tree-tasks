@@ -138,8 +138,8 @@ export function Treemap({ tasks, onTaskClick, onToggleComplete }: Props) {
           const clipId = `clip-${task.id}`;
 
           // Layout tiers
-          const isTiny  = w < 28 || h < 28;
-          const isSmall = !isTiny && h < 50;
+          const isTiny  = w < 16 || h < 16; // only truly microscopic cells get no text
+          const isSmall = h < 50;
 
           return (
             <g
@@ -209,7 +209,7 @@ export function Treemap({ tasks, onTaskClick, onToggleComplete }: Props) {
 
                 {/* Wrapping task name */}
                 {!isTiny && (
-                  <foreignObject x={pad} y={pad} width={w - pad * 2} height={h - pad * 2 - 16}>
+                  <foreignObject x={pad} y={pad} width={Math.max(0, w - pad * 2)} height={Math.max(0, h - pad * 2)}>
                     <div
                       style={{
                         fontSize: 10,
@@ -220,29 +220,24 @@ export function Treemap({ tasks, onTaskClick, onToggleComplete }: Props) {
                         textDecoration: task.completed ? 'line-through' : 'none',
                         overflow: 'hidden',
                         display: '-webkit-box',
-                        WebkitLineClamp: Math.max(1, Math.floor((h - pad * 2 - 20) / 14)),
+                        WebkitLineClamp: Math.max(1, Math.floor((h - pad * 2) / 14)),
                         WebkitBoxOrient: 'vertical',
                       }}
                     >
-                      {task.name}
+                      {task.dueDate ? (
+                        <span style={{
+                          background: '#1A1714',
+                          color: '#F8F5F0',
+                          padding: '0 3px',
+                          borderRadius: 2,
+                        }}>
+                          {task.name}
+                        </span>
+                      ) : task.name}
                     </div>
                   </foreignObject>
                 )}
 
-                {/* Size label */}
-                {!isTiny && !isSmall && (
-                <text
-                  x={pad}
-                  y={h - pad}
-                  fontSize={9}
-                  fill={c.text}
-                  fontFamily="var(--font-mono)"
-                  opacity={0.55}
-                  letterSpacing={0.5}
-                >
-                  {task.size}
-                </text>
-                )}
 
               </g>{/* end clip group */}
             </g>
