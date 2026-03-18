@@ -1,0 +1,83 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #F8F5F0;
+  --sidebar-bg: #EEEAE3;
+  --text: #1A1714;
+  --text-muted: #7A7068;
+  --text-faint: #B0A89E;
+  --accent: #B84C30;
+  --accent-light: #F0D4CB;
+  --border: rgba(26, 23, 20, 0.1);
+  --border-strong: rgba(26, 23, 20, 0.2);
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input, textarea, select {
+  font-family: var(--font-body);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+
+/* Treemap cell hover */
+.treemap-cell {
+  transition: filter 0.15s ease;
+}
+.treemap-cell:hover {
+  filter: brightness(0.95);
+}
+
+/* Modal animation */
+.modal-overlay {
+  animation: fadeIn 0.15s ease;
+}
+.modal-box {
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* History panel */
+.history-panel {
+  animation: slideRight 0.2s ease;
+}
+@keyframes slideRight {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
