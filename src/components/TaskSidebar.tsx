@@ -4,7 +4,6 @@ const PRIORITY_DOT: Record<TaskPriority, string> = {
   High: '#D85A30',
   Medium: '#EF9F27',
   Low: '#378ADD',
-  Backlog: '#9A9590',
 };
 
 interface Props {
@@ -37,7 +36,7 @@ export function TaskSidebar({
         width: 268,
         flexShrink: 0,
         background: 'var(--sidebar-bg)',
-        borderRight: '1px solid var(--border)',
+        borderLeft: '1px solid var(--border)',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',

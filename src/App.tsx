@@ -85,6 +85,11 @@ export function App() {
         background: 'var(--bg)',
       }}
     >
+      {/* Treemap */}
+      <main style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+        <Treemap tasks={week.tasks} onTaskClick={openEdit} onToggleComplete={toggleComplete} />
+      </main>
+
       {/* Sidebar */}
       <TaskSidebar
         tasks={week.tasks}
@@ -94,11 +99,6 @@ export function App() {
         onToggleComplete={toggleComplete}
         onOpenHistory={() => setHistoryOpen(true)}
       />
-
-      {/* Treemap */}
-      <main style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
-        <Treemap tasks={week.tasks} onTaskClick={openEdit} onToggleComplete={toggleComplete} />
-      </main>
 
       {/* Task modal */}
       {modal.mode !== 'closed' && (

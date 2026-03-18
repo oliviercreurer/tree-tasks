@@ -17,10 +17,9 @@ interface PriorityColor {
 }
 
 const COLORS: Record<TaskPriority, PriorityColor> = {
-  High:    { fill: '#F0997B', stroke: '#D85A30', text: '#4A1B0C' },
-  Medium:  { fill: '#FAC775', stroke: '#EF9F27', text: '#412402' },
-  Low:     { fill: '#85B7EB', stroke: '#378ADD', text: '#042C53' },
-  Backlog: { fill: '#C8C5BE', stroke: '#9A9590', text: '#3A3632' },
+  High:   { fill: '#F0997B', stroke: '#D85A30', text: '#4A1B0C' },
+  Medium: { fill: '#FAC775', stroke: '#EF9F27', text: '#412402' },
+  Low:    { fill: '#85B7EB', stroke: '#378ADD', text: '#042C53' },
 };
 
 interface Leaf {
@@ -61,18 +60,33 @@ export function Treemap({ tasks, onTaskClick, onToggleComplete }: Props) {
         const t = d as unknown as Task;
         return SIZE_MAP[t.size] ?? 1;
       })
-      .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
+      .sort((a, b) => {
+        const ta = a.data as unknown as Task;
+        const tb = b.data as unknown as Task;
+        // 1. Nearest due date first (undated tasks last)
+        const dateA = ta.dueDate ? new Date(ta.dueDate).getTime() : Infinity;
+        const dateB = tb.dueDate ? new Date(tb.dueDate).getTime() : Infinity;
+        if (dateA !== dateB) return dateA - dateB;
+        // 2. Higher priority first
+        const PRIORITY_ORDER: Record<string, number> = { High: 0, Medium: 1, Low: 2 };
+        const pa = PRIORITY_ORDER[ta.priority] ?? 99;
+        const pb = PRIORITY_ORDER[tb.priority] ?? 99;
+        if (pa !== pb) return pa - pb;
+        // 3. Larger size as final tiebreaker
+        return (b.value ?? 0) - (a.value ?? 0);
+      });
 
     d3.treemap<{ children?: Task[] }>()
       .size([dims.width, dims.height])
       .paddingInner(4)
       .paddingOuter(0)(root);
 
+    // Mirror x-axis so nearest-due tasks land in the top-right
     return root.leaves().map((node) => ({
       task: node.data as unknown as Task,
-      x0: node.x0,
+      x0: dims.width - node.x1,
       y0: node.y0,
-      x1: node.x1,
+      x1: dims.width - node.x0,
       y1: node.y1,
     }));
   }, [tasks, dims]);
@@ -81,7 +95,6 @@ export function Treemap({ tasks, onTaskClick, onToggleComplete }: Props) {
     { priority: 'High', label: 'High' },
     { priority: 'Medium', label: 'Medium' },
     { priority: 'Low', label: 'Low' },
-    { priority: 'Backlog', label: 'Backlog' },
   ];
 
   return (
@@ -120,10 +133,13 @@ export function Treemap({ tasks, onTaskClick, onToggleComplete }: Props) {
         {leaves.map(({ task, x0, y0, x1, y1 }) => {
           const w = x1 - x0;
           const h = y1 - y0;
-          const c = COLORS[task.priority] ?? COLORS.Backlog;
+          const c = COLORS[task.priority] ?? COLORS.Low;
           const pad = 9;
-          const isSmall = w < 60 || h < 36;
-          const isTiny = w < 36 || h < 24;
+          const clipId = `clip-${task.id}`;
+
+          // Layout tiers
+          const isTiny  = w < 28 || h < 28;
+          const isSmall = !isTiny && h < 50;
 
           return (
             <g
@@ -140,8 +156,20 @@ export function Treemap({ tasks, onTaskClick, onToggleComplete }: Props) {
               }}
               onMouseMove={(e) => setTooltip({ task, x: e.clientX, y: e.clientY })}
               onMouseLeave={() => setTooltip(null)}
-              style={{ cursor: 'pointer' }}
+              style={{
+                cursor: 'pointer',
+                filter: task.completed ? 'grayscale(1)' : 'none',
+                opacity: task.completed ? 0.28 : 1,
+                transition: 'opacity 0.2s, filter 0.2s',
+              }}
             >
+              {/* Clip path — prevents any text from spilling outside the cell */}
+              <defs>
+                <clipPath id={clipId}>
+                  <rect width={w} height={h} rx={4} />
+                </clipPath>
+              </defs>
+
               {/* Background */}
               <rect
                 width={w}
@@ -150,7 +178,6 @@ export function Treemap({ tasks, onTaskClick, onToggleComplete }: Props) {
                 fill={c.fill}
                 stroke={c.stroke}
                 strokeWidth={1}
-                opacity={task.completed ? 0.45 : 1}
               />
 
               {/* Completed diagonal lines */}
@@ -177,45 +204,33 @@ export function Treemap({ tasks, onTaskClick, onToggleComplete }: Props) {
                 />
               )}
 
-              {/* Task name — foreignObject for wrapping in larger cells */}
-              {!isSmall && (
-                <foreignObject x={pad} y={pad} width={w - pad * 2} height={h - pad * 2 - 16}>
-                  <div
-                    style={{
-                      fontSize: 10,
-                      lineHeight: 1.4,
-                      color: c.text,
-                      fontFamily: "'JetBrains Mono', monospace",
-                      fontWeight: task.completed ? 400 : 500,
-                      textDecoration: task.completed ? 'line-through' : 'none',
-                      overflow: 'hidden',
-                      display: '-webkit-box',
-                      WebkitLineClamp: Math.max(1, Math.floor((h - pad * 2 - 20) / 17)),
-                      WebkitBoxOrient: 'vertical',
-                      opacity: task.completed ? 0.7 : 1,
-                    }}
-                  >
-                    {task.name}
-                  </div>
-                </foreignObject>
-              )}
+              {/* Clipped text content — always top-left anchored */}
+              <g clipPath={`url(#${clipId})`}>
 
-              {/* Truncated name for medium cells */}
-              {isSmall && !isTiny && (
-                <text
-                  x={pad}
-                  y={h / 2 + 4}
-                  fontSize={10}
-                  fill={c.text}
-                  fontFamily="'JetBrains Mono', monospace"
-                  opacity={task.completed ? 0.6 : 0.9}
-                >
-                  {task.name.length > 18 ? task.name.slice(0, 16) + '…' : task.name}
-                </text>
-              )}
+                {/* Wrapping task name */}
+                {!isTiny && (
+                  <foreignObject x={pad} y={pad} width={w - pad * 2} height={h - pad * 2 - 16}>
+                    <div
+                      style={{
+                        fontSize: 10,
+                        lineHeight: 1.4,
+                        color: c.text,
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontWeight: task.completed ? 400 : 500,
+                        textDecoration: task.completed ? 'line-through' : 'none',
+                        overflow: 'hidden',
+                        display: '-webkit-box',
+                        WebkitLineClamp: Math.max(1, Math.floor((h - pad * 2 - 20) / 14)),
+                        WebkitBoxOrient: 'vertical',
+                      }}
+                    >
+                      {task.name}
+                    </div>
+                  </foreignObject>
+                )}
 
-              {/* Size label */}
-              {!isTiny && (
+                {/* Size label */}
+                {!isTiny && !isSmall && (
                 <text
                   x={pad}
                   y={h - pad}
@@ -227,7 +242,9 @@ export function Treemap({ tasks, onTaskClick, onToggleComplete }: Props) {
                 >
                   {task.size}
                 </text>
-              )}
+                )}
+
+              </g>{/* end clip group */}
             </g>
           );
         })}

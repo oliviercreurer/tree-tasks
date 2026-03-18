@@ -2,13 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 import type { Task, TaskSize, TaskPriority } from '../types';
 
 const SIZES: TaskSize[] = ['S', 'S-M', 'M', 'M-L', 'L'];
-const PRIORITIES: TaskPriority[] = ['High', 'Medium', 'Low', 'Backlog'];
+const PRIORITIES: TaskPriority[] = ['High', 'Medium', 'Low'];
 
 const PRIORITY_DOT: Record<TaskPriority, string> = {
   High: '#D85A30',
   Medium: '#EF9F27',
   Low: '#378ADD',
-  Backlog: '#9A9590',
 };
 
 interface Props {

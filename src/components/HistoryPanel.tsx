@@ -7,7 +7,6 @@ const PRIORITY_DOT: Record<TaskPriority, string> = {
   High: '#D85A30',
   Medium: '#EF9F27',
   Low: '#378ADD',
-  Backlog: '#9A9590',
 };
 
 interface Props {

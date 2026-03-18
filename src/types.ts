@@ -1,5 +1,5 @@
 export type TaskSize = 'S' | 'S-M' | 'M' | 'M-L' | 'L';
-export type TaskPriority = 'High' | 'Medium' | 'Low' | 'Backlog';
+export type TaskPriority = 'High' | 'Medium' | 'Low';
 
 export interface Task {
   id: string;
